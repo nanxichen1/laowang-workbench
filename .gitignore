@@ -1,0 +1,10 @@
+node_modules/
+npm-debug.log*
+*.log
+temp_*
+temp_hot_data.json
+fetch_err.log
+_check.js
+.DS_Store
+android/.gradle/
+android/app/build/

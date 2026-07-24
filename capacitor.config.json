@@ -1,0 +1,10 @@
+{
+  "appId": "com.workbench.app",
+  "appName": "老王日志",
+  "webDir": ".",
+  "server": {
+    "androidScheme": "https",
+    "url": "https://27b9aa5683dc4c1d9bbd2a5192cff460.app.codebuddy.work",
+    "cleartext": false
+  }
+}

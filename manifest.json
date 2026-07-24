@@ -1,0 +1,41 @@
+{
+  "name": "老王日志",
+  "short_name": "老王日志",
+  "description": "老王日志 · 每日任务管理 + 抖音爆款二创灵感",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "fullscreen",
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
+  "background_color": "#f0f1f3",
+  "theme_color": "#FFC300",
+  "categories": [
+    "productivity",
+    "business",
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
