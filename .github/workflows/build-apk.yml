@@ -23,13 +23,10 @@ jobs:
           java-version: 17
 
       - name: Set up Android SDK
-        run: |
-          curl -sL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline.zip
-          unzip -q /tmp/cmdline.zip -d /opt/android-sdk/cmdline-tools
-          mv /opt/android-sdk/cmdline-tools/cmdline-tools /opt/android-sdk/cmdline-tools/latest
-          echo "ANDROID_HOME=/opt/android-sdk" >> $GITHUB_ENV
-          echo "/opt/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          yes | sdkmanager --sdk_root=/opt/android-sdk "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK packages
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
       - name: Install Gradle 8.9
         run: |
@@ -56,14 +53,13 @@ jobs:
         if: failure()
         run: |
           python3 -c "
-          import json,urllib.request
+          import json,urllib.request,os
           err=open('android/build_output.txt').read()[-4000:]
           body='\`\`\`\n'+err+'\n\`\`\`'
           data=json.dumps({'title':'[CI] Build Error','body':body}).encode()
           req=urllib.request.Request('https://api.github.com/repos/${{ github.repository }}/issues', data=data, headers={'Authorization':'token ${{ secrets.GITHUB_TOKEN }}','Content-Type':'application/json','Accept':'application/vnd.github+json'})
           try:
-              urllib.request.urlopen(req)
-              print('issue created')
+              urllib.request.urlopen(req); print('issue created')
           except Exception as e:
               print('issue create failed:', e)
           "
