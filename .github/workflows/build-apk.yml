@@ -47,7 +47,12 @@ jobs:
       - name: Build Debug APK
         run: |
           cd android
-          gradle assembleDebug --no-daemon --console=plain 2>&1 | tee build_output.txt
+          gradle assembleDebug --no-daemon --console=plain > build_output.txt 2>&1
+
+      - name: Find APK
+        if: success()
+        run: |
+          find android -name "*.apk" -type f
 
       - name: Report build error
         if: failure()
@@ -69,5 +74,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: workbench-apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/**/*.apk
           if-no-files-found: error
