@@ -24,11 +24,6 @@ jobs:
       - name: Install SDK packages
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
-      - name: Install npm deps & sync Capacitor
-        run: |
-          npm ci || npm install
-          npx cap sync android
-
       - name: Build Debug APK
         run: |
           cd android
