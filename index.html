@@ -426,25 +426,20 @@ function sv(){localStorage.setItem(TK,JSON.stringify(tasks));schedulePush();}
 function addTask(){
   const v=$('taskIn').value.trim(); if(!v)return;
   tasks.push({id:Date.now(), text:v, quad:$('taskQ').value, done:false});
-  $('taskIn').value=''; sv(); renderTasks(); $('taskIn').focus();
+  $('taskIn').value='';
+  try{ sv(); }catch(e){ console.warn('save failed',e); }
+  renderTasks(); $('taskIn').focus();
 }
 $('taskIn').addEventListener('keydown',e=>{ if(e.key==='Enter') addTask(); });
 
 function tog(id){const t=tasks.find(x=>x.id===id);if(t){t.done=!t.done;sv();renderTasks();}}
-function delT(id){tasks=tasks.filter(x=>x.id!==id);sv();renderTasks();}
+function delT(id){tasks=tasks.filter(x=>x.id!==id);try{sv();}catch(e){}renderTasks();}
 function clearDone(){
   const n=tasks.filter(t=>t.done).length; if(!n){toast('没有已完成的');return;}
   tasks=tasks.filter(t=>!t.done);sv();renderTasks();toast(`清除了 ${n} 条`);
 }
 
 function renderTasks(){
-  ['q1','q2','q3'].forEach(q=>{
-    const list=tasks.filter(t=>t.quad===q);
-    const labels={q1:['重要且紧急 · 马上做','🔴'],q2:['重要不紧急 · 排时间做','🔵'],q3:['其他 · 碎片时间做','⚪']};
-    const [lbl,ic]=labels[q];
-    const act=list.filter(t=>!t.done).length+'/'+list.length;
-    $('quadGroup').innerHTML += ($('quadGroup').innerHTML?'':'') + ''; // placeholder
-  });
   // full rebuild
   let html='';
   [{k:'q1',t:'重要且紧急 · 马上做',c:'#df4446'},{k:'q2',t:'重要不紧急 · 排时间做',c:'#3b7ce8'},{k:'q3',t:'其他 · 碎片时间做',c:'#999'}].forEach(q=>{
@@ -554,8 +549,11 @@ function renderSelDay(){
 }
 function addMonth(){
   const v=$('monthIn').value.trim();if(!v)return;
+  if(!curSelDate)curSelDate=todayStr();
   monthTasks.push({id:Date.now(),text:v,done:false,date:curSelDate,goal:''});
-  $('monthIn').value='';svM();renderMonthAll();$('monthIn').focus();
+  $('monthIn').value='';
+  try{ svM(); }catch(e){ console.warn('save failed',e); }
+  renderMonthAll();$('monthIn').focus();
 }
 function addGoal(){
   const v=$('goalIn').value.trim();if(!v)return;
@@ -563,7 +561,7 @@ function addGoal(){
   $('goalIn').value='';svM();renderGoals();
 }
 function togM(id){const t=monthTasks.find(x=>x.id===id);if(t){t.done=!t.done;svM();renderMonthAll();if(monthMode==='goal')renderGoals();}}
-function delM(id){monthTasks=monthTasks.filter(x=>x.id!==id);svM();renderMonthAll();if(monthMode==='goal')renderGoals();}
+function delM(id){monthTasks=monthTasks.filter(x=>x.id!==id);try{svM();}catch(e){}renderMonthAll();if(monthMode==='goal')renderGoals();}
 function clearMonthDone(){
   const n=monthTasks.filter(t=>t.done).length;if(!n){toast('没有已完成的');return;}
   monthTasks=monthTasks.filter(t=>!t.done);svM();renderMonthAll();if(monthMode==='goal')renderGoals();toast(`清除了 ${n} 条`);

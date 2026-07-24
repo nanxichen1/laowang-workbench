@@ -1,5 +1,5 @@
 /* Service Worker - 图书带货工作台 PWA */
-const CACHE = 'wb-v2';
+const CACHE = 'wb-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -34,21 +34,16 @@ self.addEventListener('fetch', e => {
   // 仅处理同源请求
   if (url.origin !== location.origin) return;
 
+  // network-first：优先拉取最新资源，失败再回退缓存（保证更新即时生效，不被旧缓存卡住）
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        // 仅缓存成功的同源响应
-        if (res && res.ok && res.type === 'basic') {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      }).catch(() => {
-        // 导航请求离线兜底
-        if (e.request.mode === 'navigate') return caches.match('./index.html');
-        return caches.match('./index.html');
-      });
+    fetch(e.request).then(res => {
+      if (res && res.ok && res.type === 'basic') {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+      }
+      return res;
+    }).catch(() => {
+      return caches.match(e.request).then(cached => cached || caches.match('./index.html'));
     })
   );
 });
