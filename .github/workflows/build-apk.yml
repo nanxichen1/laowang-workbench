@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,10 +23,13 @@ jobs:
           java-version: 17
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install SDK packages
-        run: sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+        run: |
+          curl -sL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline.zip
+          unzip -q /tmp/cmdline.zip -d /opt/android-sdk/cmdline-tools
+          mv /opt/android-sdk/cmdline-tools/cmdline-tools /opt/android-sdk/cmdline-tools/latest
+          echo "ANDROID_HOME=/opt/android-sdk" >> $GITHUB_ENV
+          echo "/opt/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          yes | sdkmanager --sdk_root=/opt/android-sdk "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
       - name: Install Gradle 8.9
         run: |
@@ -30,20 +37,29 @@ jobs:
           unzip -q /tmp/gradle.zip -d /opt/
           echo "/opt/gradle-8.9/bin" >> $GITHUB_PATH
 
+      - name: Create local.properties
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          cat android/local.properties
+
       - name: Build Debug APK
+        id: build
+        continue-on-error: true
         run: |
           cd android
           gradle assembleDebug --no-daemon --console=plain 2>&1 | tee build_output.txt
 
-      - name: Upload build logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-logs
-          path: android/build_output.txt
+      - name: Report build error
+        if: steps.build.outcome == 'failure'
+        run: |
+          err=$(tail -60 android/build_output.txt)
+          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"title\":\"[CI] Build Error $(date +%H%M)\",\"body\":\"\`\`\`\n${err}\n\`\`\`\"}" \
+            https://api.github.com/repos/${{ github.repository }}/issues
 
       - name: Upload APK
-        if: success()
+        if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: workbench-apk
